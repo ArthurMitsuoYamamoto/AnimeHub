@@ -2,8 +2,10 @@ CREATE TABLE anime (
                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
                        title VARCHAR(255) NOT NULL,
                        genre VARCHAR(255) NOT NULL,
-                       anime_year INT NOT NULL
+                       anime_year INT NOT NULL,
+                       image_url VARCHAR(255) NOT NULL
 );
+
 
 CREATE TABLE usuario (
                          id BIGINT AUTO_INCREMENT PRIMARY KEY,

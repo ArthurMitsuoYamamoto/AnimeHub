@@ -1,6 +1,7 @@
-package fiap.com.br.otakuhub.usuario;
+package fiap.com.br.otakuhub.domain.usuario;
 
 import java.util.List;
+import fiap.com.br.otakuhub.domain.usuario.dto.UsuarioFormRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
@@ -38,7 +39,7 @@ public class UsuarioController {
         return usuarioService.findAll();
     }
 
-    @PostMapping("create")
+    @PostMapping
     @ResponseStatus(CREATED)
     @CacheEvict(allEntries = true)
     @Operation(
@@ -49,9 +50,11 @@ public class UsuarioController {
             @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados enviados são inválidos")
     })
-    public Usuario create(@RequestBody @Valid Usuario usuario) {
-        log.info("Cadastrando usuário {}", usuario);
-        return usuarioService.saveUsuario(usuario);
+    public ResponseEntity<Usuario> create(@RequestBody @Valid UsuarioFormRequest userFormRequest) {
+        log.info("Cadastrando usuário {}", userFormRequest);
+        Usuario usuario = userFormRequest.toModel();
+        Usuario createdUsuario = usuarioService.createUsuario(usuario);
+        return ResponseEntity.status(CREATED).body(createdUsuario); // Retorna o usuário criado
     }
 
     @PutMapping("{id}")
@@ -65,12 +68,13 @@ public class UsuarioController {
             @ApiResponse(responseCode = "400", description = "Dados enviados são inválidos"),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
     })
-    public ResponseEntity<Usuario> update(@PathVariable Long id, @RequestBody @Valid Usuario usuario) {
-        log.info("Atualizando usuário com ID {} para {}", id, usuario);
+    public ResponseEntity<Usuario> update(@PathVariable Long id, @RequestBody @Valid UsuarioFormRequest usuarioFormRequest) {
+        log.info("Atualizando usuário com ID {} para {}", id, usuarioFormRequest);
         return usuarioService.findById(id)
                 .map(existingUsuario -> {
-                    usuario.setId(id); // Atualiza o ID para garantir que estamos atualizando o registro correto
-                    Usuario updatedUsuario = usuarioService.saveUsuario(usuario); // Salva o usuário atualizado
+                    Usuario usuario = usuarioFormRequest.toModel();
+                    usuario.setId(id); // Define o ID para garantir a atualização correta
+                    Usuario updatedUsuario = usuarioService.updateUsuario(id, usuario); // Atualiza o usuário
                     return ResponseEntity.ok(updatedUsuario); // Retorna o usuário atualizado
                 })
                 .orElse(ResponseEntity.notFound().build()); // Retorna 404 se o usuário não for encontrado

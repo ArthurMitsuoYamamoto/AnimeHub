@@ -1,5 +1,4 @@
-package fiap.com.br.otakuhub.usuario;
-
+package fiap.com.br.otakuhub.domain.anime;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,25 +6,19 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 @Entity
 @Data
-@Table(name = "usuario")
+@Table(name = "anime")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Usuario {
+public class Anime {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private String username;
-
-    private String password;
-
-    private String email;
-
-
-
-
+    Long id;
+    String title;
+    String genre;
+    int year;
+    String imageUrl;
 }
