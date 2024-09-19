@@ -1,8 +1,5 @@
 package fiap.com.br.otakuhub.usuario;
 
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.NO_CONTENT;
-
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +16,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
+import static org.springframework.http.HttpStatus.*;
+
 @RestController
-@RequestMapping("/usuarios")
+@RequestMapping("usuarios")
 @Slf4j
 @CacheConfig(cacheNames = "usuarios")
 @Tag(name = "usuarios")
@@ -39,23 +38,45 @@ public class UsuarioController {
         return usuarioService.findAll();
     }
 
-    @PostMapping
+    @PostMapping("create")
     @ResponseStatus(CREATED)
     @CacheEvict(allEntries = true)
     @Operation(
-            summary = "Cadastrar ou atualizar um usuário",
-            description = "Cria ou atualiza um usuário com os dados enviados no corpo da requisição."
+            summary = "Cadastrar um usuário",
+            description = "Cria um novo usuário com os dados enviados no corpo da requisição."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Usuário criado ou atualizado com sucesso"),
+            @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados enviados são inválidos")
     })
-    public Usuario createOrUpdate(@RequestBody @Valid Usuario usuario) {
-        log.info("Cadastrando ou atualizando usuário {}", usuario);
+    public Usuario create(@RequestBody @Valid Usuario usuario) {
+        log.info("Cadastrando usuário {}", usuario);
         return usuarioService.saveUsuario(usuario);
     }
 
-    @GetMapping("/{id}")
+    @PutMapping("{id}")
+    @CacheEvict(allEntries = true)
+    @Operation(
+            summary = "Atualizar um usuário",
+            description = "Atualiza o usuário com o ID especificado com os dados enviados no corpo da requisição."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Usuário atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados enviados são inválidos"),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+    })
+    public ResponseEntity<Usuario> update(@PathVariable Long id, @RequestBody @Valid Usuario usuario) {
+        log.info("Atualizando usuário com ID {} para {}", id, usuario);
+        return usuarioService.findById(id)
+                .map(existingUsuario -> {
+                    usuario.setId(id); // Atualiza o ID para garantir que estamos atualizando o registro correto
+                    Usuario updatedUsuario = usuarioService.saveUsuario(usuario); // Salva o usuário atualizado
+                    return ResponseEntity.ok(updatedUsuario); // Retorna o usuário atualizado
+                })
+                .orElse(ResponseEntity.notFound().build()); // Retorna 404 se o usuário não for encontrado
+    }
+
+    @GetMapping("{id}")
     @Operation(
             summary = "Buscar um usuário por ID",
             description = "Retorna o usuário com o ID especificado."
@@ -67,7 +88,7 @@ public class UsuarioController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("{id}")
     @ResponseStatus(NO_CONTENT)
     @CacheEvict(allEntries = true)
     @Operation(
@@ -78,22 +99,4 @@ public class UsuarioController {
         log.info("Deletando usuário com ID {}", id);
         usuarioService.deleteUsuario(id);
     }
-
-    @PutMapping("/{id}")
-    @CacheEvict(allEntries = true)
-    @Operation(
-            summary = "Atualizar um usuário",
-            description = "Atualiza o usuário com o ID especificado com os dados enviados no corpo da requisição."
-    )
-    public ResponseEntity<Usuario> update(@PathVariable Long id, @RequestBody @Valid Usuario usuario) {
-        log.info("Atualizando usuário com ID {} para {}", id, usuario);
-        return usuarioService.findById(id)
-                .map(existingUsuario -> {
-                    usuario.setId(id); // Atualiza o ID para garantir que estamos atualizando o registro correto
-                    Usuario updatedUsuario = usuarioService.saveUsuario(usuario); // Salva o usuário atualizado
-                    return ResponseEntity.ok(updatedUsuario); // Retorna o usuário atualizado
-                })
-                .orElse(ResponseEntity.notFound().build()); // Retorna 404 se o usuário não for encontrado
-    }
 }
-
