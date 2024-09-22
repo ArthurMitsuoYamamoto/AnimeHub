@@ -1,6 +1,7 @@
 package fiap.com.br.otakuhub.auth;
 
 import fiap.com.br.otakuhub.domain.usuario.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +13,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
 
+    @Autowired
     public AuthService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, TokenService tokenService) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;

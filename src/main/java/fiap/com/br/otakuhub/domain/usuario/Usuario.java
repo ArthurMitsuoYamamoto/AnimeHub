@@ -20,6 +20,7 @@ public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
+    String name;
     String username;
     String password;
     String email;
